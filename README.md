@@ -12,7 +12,7 @@ Working with CMS Open Data to study the weak interaction and related fields usin
 * `AnalysisPhysics.h` - Header file containing physics calculation functions.
 
 ## How to run
-1. Ensure you have CERN ROOT installed.
+1. Ensure you have CERN ROOT installed.(https://root.cern/install/)
 2. Place the required `.root` data files in the same directory.
 3. Run the scripts using:
    ```bash
