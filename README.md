@@ -8,7 +8,7 @@ Working with CMS Open Data to study the weak interaction and related fields usin
 ## Files
 * `WithoutCutsFA.cc` - Analysis script for Monte Carlo simulated data.
 * `RWithoutCuts.cc` - Analysis script for experimental data.
-*  The same files with the cuts. The "R" before the name stands for Real data.
+*  The same files with the cuts. The "R" before the name stands for Real(experimental) data.
 * `AnalysisPhysics.h` - Header file containing physics calculation functions.
 
 ## How to run
