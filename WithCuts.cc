@@ -122,7 +122,9 @@ void WithCuts(){
     TH1F *hMuon_pt_plan = new TH1F("hMuon_pt_plan", "p_{T} of all muons;p_{T} [GeV];Events", 100, 0, 150);
     TH1F *hMuon_phi_correct = new TH1F("hMuon_phi_correct", "#phi of muons (correct range);#phi [rad];Events", 64, -3.2, 3.2);
     TH1F *hDeltaEta = new TH1F("hDeltaEta", "#Delta#eta = #eta(#mu^{-}) - #eta(#mu^{+});#Delta#eta;Events", 50, -5, 5);
-    
+    TH1F *hCosDeltaPhi = new TH1F("hCosDeltaPhi", "cos(#Delta#phi);cos(#Delta#phi);Events", 50, -1.1, 1.1);
+    TH1F *hCosDeltaPhiJets = new TH1F("hCosDeltaPhiJets", "cos(#Delta#phi_{jj}) between leading jets;cos(#Delta#phi_{jj});Events", 50, -1.1, 1.1);
+
     TH1F *hMET_pt = new TH1F("hMET_pt","hMET_pt", 250, 0., 50.);
     TH1F *hMET_phi = new TH1F("hMET_phi", "hMET_phi", 50, -5., 5.);
     TH1F *hMET_sumEt = new TH1F("hMET_sumEt", "hMET_sumEt", 250, -5., 50.);
@@ -155,6 +157,7 @@ void WithCuts(){
     TH1F *hGenJet_mass = new TH1F("hGenJet_mass", "GenJet Mass;Mass [GeV];Events", 50, 0., 100.);
     
     TH1F *hDijet_mass = new TH1F("hDijet_mass", "Dijet Invariant Mass; M_{jj} [GeV]; Events", 100, 0, 300);
+    TH1F *hCosDeltaPhi = new TH1F("hCosDeltaPhi", "cos(#Delta#phi);cos(#Delta#phi);Events", 50, -1.1, 1.1);
     TH2F *hnGenJet_vs_nJet = new TH2F("hnGenJet_vs_nJet", "nGenJet vs nJet; nJet; nGenJet", 20, -0.5, 19.5, 20, -0.5, 19.5);
 
     TH2F *hnGenJet_vs_GenZPt = new TH2F("hnGenJet_vs_GenZPt", "hnGenJet_vs_GenZPt", 100, 0, 300, 20, -0.5, 19.5);
@@ -171,6 +174,7 @@ void WithCuts(){
     TH2F *hDiJetPt_vs_GenZPt = new TH2F("hDiJetPt_vs_GenZPt", "hDiJetPt_vs_GenZPt", 100, 0, 300, 100, 0, 300);
     TH2F *hDiJetPz_vs_GenZPz = new TH2F("hDiJetPz_vs_GenZPz", "hDiJetPz_vs_GenZPz", 100, -500, 500, 100, -500, 500);
     TH1F *hDeltaPhi_DiJet_GenZ = new TH1F("hDeltaPhi_DiJet_GenZ", "hDeltaPhi_DiJet_GenZ", 50, -3.2, 3.2);
+    TH2F *hCosDeltaPhiJets_vs_Muons = new TH2F("hCosDeltaPhiJets_vs_Muons", "cos(#Delta#phi_{jj}) vs cos(#Delta#phi_{#mu#mu});cos(#Delta#phi_{#mu#mu});cos(#Delta#phi_{jj})", 50, -1.1, 1.1, 50, -1.1, 1.1);
 
     TH2F *hnMuonVMuon_leadingPt = new TH2F("hnMuonVMuon_leadingPt", "hnMuonVMuon_leadingPt", 10, -0.5, 9.5, 100, 0., 150.);
     TH2F *hMuon_phiVMuon_eta = new TH2F("hMuon_phiVMuon_eta", "hMuon_phiVMuon_eta", 50, -5., 5., 50, -5., 5.);
@@ -225,28 +229,29 @@ void WithCuts(){
 
         totalEvents++;
 
-        // CUT 1: nMuon >= 2
+   
         if (nMuon < 2) {
             continue;
         }
         passTwoMuons++;
 
-        // CUT 2: Kinematics - pT > 30 && |eta| < 2.4
+        
         if (Muon_pt[0] <= 30.0 || std::abs(Muon_eta[0]) >= 2.4) continue;
         if (Muon_pt[1] <= 30.0 || std::abs(Muon_eta[1]) >= 2.4) continue;
         passKinematics++;
 
-        // CUT 3: Opposite charge
+      
         if (Muon_charge[0] * Muon_charge[1] >= 0) continue;
         passOppositeCharge++;
 
-        // CUT 4: cos(DeltaPhi) < 0.8
+    
         double deltaPhi = TVector2::Phi_mpi_pi(Muon_phi[0] - Muon_phi[1]);
         double cosDeltaPhi = cos(deltaPhi);
-        if (cosDeltaPhi >= 0.8) continue;
+        hMuon_deltaPhi->Fill(deltaPhi);
+        if (cosDeltaPhi > -0.2 && cosDeltaPhi < 0.8) continue;
         passTopology++;
 
-        // CUT 5: Z Mass Window 60 < M < 120
+       
         double invMass = AnalysisPhysics::CalculateInvMass_Hand(
             Muon_pt[0], Muon_eta[0], Muon_phi[0], Muon_mass[0],
             Muon_pt[1], Muon_eta[1], Muon_phi[1], Muon_mass[1]
@@ -254,7 +259,7 @@ void WithCuts(){
         if (invMass <= 60.0 || invMass >= 120.0) continue;
         passMassWindow++;
 
-        // --- FILL HISTOGRAMS (only for events passing all cuts) ---
+        Μθον
         hnJets_vs_nMuons->Fill(nMuon, nJet);
         hnJets_vs_nTau->Fill(nTau, nJet);
         
@@ -281,6 +286,11 @@ void WithCuts(){
             j2.SetPtEtaPhiM(Jet_pt[1], Jet_eta[1], Jet_phi[1], Jet_mass[1]);
             dijet = j1 + j2;
             hDijet_mass->Fill(dijet.M());
+            double deltaPhiJets = TVector2::Phi_mpi_pi(Jet_phi[0] - Jet_phi[1]);
+            double cosDeltaPhiJets = cos(deltaPhiJets);
+            hCosDeltaPhiJets->Fill(cosDeltaPhiJets);
+            hCosDeltaPhiJets_vs_Muons->Fill(cosDeltaPhi, cosDeltaPhiJets);
+            
         }
 
         hnMuon->Fill(nMuon);
@@ -296,7 +306,7 @@ void WithCuts(){
         hCaloMET_sumEt->Fill(CaloMET_sumEt);
         hMET_significanceVMET_phi->Fill(MET_significance, MET_phi);
 
-        for(UInt_t mu = 0; mu < nMuon; mu++) {
+        for(UInt_t mu = 0; mu < 2; mu++) {
             hMuon_charge->Fill(Muon_charge[mu]);
             hMuon_tightCharge->Fill(Muon_tightCharge[mu]);
             hMuon_pt->Fill(Muon_pt[mu]);
@@ -464,16 +474,65 @@ void WithCuts(){
         }
     } 
     
-    std::cout << "\n======================================================\n";
-    std::cout << "                 CUT-FLOW SUMMARY                     \n";
-    std::cout << "======================================================\n";
-    std::cout << "0. Total Generated Events : " << totalEvents << "\n";
-    std::cout << "1. Pass nMuon >= 2        : " << passTwoMuons << " (" << (float)passTwoMuons/totalEvents*100 << "%)\n";
-    std::cout << "2. Pass Kinematics        : " << passKinematics << " (" << (float)passKinematics/passTwoMuons*100 << "%)\n";
-    std::cout << "3. Pass Opposite Charge   : " << passOppositeCharge << " (" << (float)passOppositeCharge/passKinematics*100 << "%)\n";
-    std::cout << "4. Pass cos(dPhi) < 0.8   : " << passTopology << " (" << (float)passTopology/passOppositeCharge*100 << "%)\n";
-    std::cout << "5. Pass Z Mass Window     : " << passMassWindow << " (" << (float)passMassWindow/totalEvents*100 << "% vs initial)\n";
-    std::cout << "======================================================\n";
+std::cout << "\n======================================================================\n";
+std::cout << "                           CUT-FLOW SUMMARY                           \n";
+std::cout << "======================================================================\n";
+std::cout << "0. Total Generated Events : " << totalEvents << " (100.0%)\n";
+std::cout << "----------------------------------------------------------------------\n";
+
+int rejected;
+
+rejected = totalEvents - passTwoMuons;
+std::cout << "1. Pass nMuon >= 2        : " << passTwoMuons 
+          << " | Accepted: " << (float)passTwoMuons / totalEvents * 100 << "%"
+          << " | Rejected: " << (float)rejected / totalEvents * 100 << "%"
+          << " | Remaining: " << (float)passTwoMuons / totalEvents * 100 << "%\n";
+std::cout << "   -> REQUIRE: at least 2 muons in the event\n";
+std::cout << "   -> REJECT: events with 0 or 1 muon\n";
+          
+rejected = passTwoMuons - passKinematics;
+std::cout << "2. Pass Muon Kinematics   : " << passKinematics 
+          << " | Accepted: " << (float)passKinematics / passTwoMuons * 100 << "%"
+          << " | Rejected: " << (float)rejected / passTwoMuons * 100 << "%"
+          << " | Remaining: " << (float)passKinematics / totalEvents * 100 << "%\n";
+std::cout << "   -> REQUIRE for BOTH muons:\n";
+std::cout << "      - Muon_pt > 30.0 GeV\n";
+std::cout << "      - |Muon_eta| < 2.4\n";
+std::cout << "   -> REJECT: muons failing pt or eta requirements\n";
+          
+rejected = passKinematics - passOppositeCharge;
+std::cout << "3. Pass Opposite Charge   : " << passOppositeCharge 
+          << " | Accepted: " << (float)passOppositeCharge / passKinematics * 100 << "%"
+          << " | Rejected: " << (float)rejected / passKinematics * 100 << "%"
+          << " | Remaining: " << (float)passOppositeCharge / totalEvents * 100 << "%\n";
+std::cout << "   -> REQUIRE: Muon_charge[0] * Muon_charge[1] < 0\n";
+std::cout << "   -> REJECT: same-sign muon pairs\n";
+          
+rejected = passOppositeCharge - passTopology;
+std::cout << "4. Pass Topology (dPhi)   : " << passTopology 
+          << " | Accepted: " << (float)passTopology / passOppositeCharge * 100 << "%"
+          << " | Rejected: " << (float)rejected / passOppositeCharge * 100 << "%"
+          << " | Remaining: " << (float)passTopology / totalEvents * 100 << "%\n";
+std::cout << "   -> REQUIRE: cos(deltaPhi) <= -0.2 OR cos(deltaPhi) >= 0.8\n";
+std::cout << "   -> REJECT: -0.2 < cos(deltaPhi) < 0.8 (back-to-back muons)\n";
+std::cout << "   -> NOTE: deltaPhi corrected to [-pi, pi] range\n";
+          
+rejected = passTopology - passMassWindow;
+std::cout << "5. Pass Z Mass Window     : " << passMassWindow 
+          << " | Accepted: " << (float)passMassWindow / passTopology * 100 << "%"
+          << " | Rejected: " << (float)rejected / passTopology * 100 << "%"
+          << " | Remaining: " << (float)passMassWindow / totalEvents * 100 << "%\n";
+std::cout << "   -> REQUIRE: 60.0 < invMass(dimuon) < 120.0 GeV\n";
+std::cout << "   -> REJECT: invMass outside Z mass window\n";
+
+std::cout << "======================================================================\n";
+std::cout << "FINAL SELECTION EFFICIENCY: " 
+          << (float)passMassWindow / totalEvents * 100 << "%\n";
+std::cout << "TOTAL REJECTED EVENTS: " 
+          << totalEvents - passMassWindow << " (" 
+          << (float)(totalEvents - passMassWindow) / totalEvents * 100 << "%)\n";
+std::cout << "======================================================================\n";
+
 
     fout->mkdir("Mu_Plots");
     fout->mkdir("MET_Plots");
@@ -524,6 +583,8 @@ void WithCuts(){
     hDimuon_pz->Write();
     hMassDifference->Write(); 
     htransMassZ->Write();
+    hCosDeltaPhi->Write();
+
     
     hnMuonVMuon_leadingPt->Write();
     hMuon_phiVMuon_eta->Write();
@@ -551,7 +612,9 @@ void WithCuts(){
     hnJets_vs_nMuons->Write();
     hnJets_vs_Mass->Write();
     hnJets_vs_LeadingJetPt->Write();
-    
+    hCosDeltaPhiJets->Write();
+    hCosDeltaPhiJets_vs_Muons->Write();
+
     fout->cd("GenJet_Plots");
     hnGenJet->Write();
     hGenJet_pt->Write();

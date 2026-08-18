@@ -95,6 +95,8 @@ void RWithoutCuts(){
     TH1F *hMuon_pt_plan = new TH1F("hMuon_pt_plan", "p_{T} of all muons;p_{T} [GeV];Events", 100, 0, 150);
     TH1F *hMuon_phi_correct = new TH1F("hMuon_phi_correct", "#phi of muons (correct range);#phi [rad];Events", 64, -3.2, 3.2);
     TH1F *hDeltaEta = new TH1F("hDeltaEta", "#Delta#eta = #eta(#mu^{-}) - #eta(#mu^{+});#Delta#eta;Events", 50, -5, 5);
+    TH1F *hCosDeltaPhi = new TH1F("hCosDeltaPhi", "cos(#Delta#phi);cos(#Delta#phi);Events", 50, -1.1, 1.1);
+    TH1F *hCosDeltaPhiJets = new TH1F("hCosDeltaPhiJets", "cos(#Delta#phi_{jj}) between leading jets;cos(#Delta#phi_{jj});Events", 50, -1.1, 1.1);
     
     TH1F *hMET_pt = new TH1F("hMET_pt","hMET_pt", 250, 0., 50.);
     TH1F *hMET_phi = new TH1F("hMET_phi", "hMET_phi", 50, -5., 5.);
@@ -128,6 +130,7 @@ void RWithoutCuts(){
     TH2F *hDiJetPt_vs_DimuonPt = new TH2F("hDiJetPt_vs_DimuonPt", "hDiJetPt_vs_DimuonPt", 100, 0, 300, 100, 0, 300);
     TH2F *hDiJetPz_vs_DimuonPz = new TH2F("hDiJetPz_vs_DimuonPz", "hDiJetPz_vs_DimuonPz", 100, -500, 500, 100, -500, 500);
     TH1F *hDeltaPhi_DiJet_Dimuon = new TH1F("hDeltaPhi_DiJet_Dimuon", "hDeltaPhi_DiJet_Dimuon", 50, -3.2, 3.2);
+    TH2F *hCosDeltaPhiJets_vs_Muons = new TH2F("hCosDeltaPhiJets_vs_Muons", "cos(#Delta#phi_{jj}) vs cos(#Delta#phi_{#mu#mu});cos(#Delta#phi_{#mu#mu});cos(#Delta#phi_{jj})", 50, -1.1, 1.1, 50, -1.1, 1.1);
 
     TH2F *hnMuonVMuon_leadingPt = new TH2F("hnMuonVMuon_leadingPt", "hnMuonVMuon_leadingPt", 10, -0.5, 9.5, 100, 0., 150.);
     TH2F *hMuon_phiVMuon_eta = new TH2F("hMuon_phiVMuon_eta", "hMuon_phiVMuon_eta", 50, -5., 5., 50, -5., 5.);
@@ -189,6 +192,10 @@ void RWithoutCuts(){
             j2.SetPtEtaPhiM(Jet_pt[1], Jet_eta[1], Jet_phi[1], Jet_mass[1]);
             dijet = j1 + j2;
             hDijet_mass->Fill(dijet.M());
+            double deltaPhiJets = TVector2::Phi_mpi_pi(Jet_phi[0] - Jet_phi[1]);
+            double cosDeltaPhiJets = cos(deltaPhiJets);
+            hCosDeltaPhiJets->Fill(cosDeltaPhiJets);
+            hCosDeltaPhiJets_vs_Muons->Fill(cosDeltaPhi, cosDeltaPhiJets);
         }
 
         hnMuon->Fill(nMuon);
@@ -254,7 +261,8 @@ void RWithoutCuts(){
         double deltaPhi = TVector2::Phi_mpi_pi(Muon_phi[0] - Muon_phi[1]);
         double cosDeltaPhi = cos(deltaPhi);
         double deltaEta = Muon_eta[0] - Muon_eta[1];
-        
+
+        hCosDeltaPhi->Fill(cosDeltaPhi);
         hMuon_deltaPhi->Fill(deltaPhi);
         hDeltaEta->Fill(deltaEta);
 
@@ -403,6 +411,7 @@ void RWithoutCuts(){
     hMuon_deltaPhiVDimuon_mass->Write();
     hDimuon_ptVDimuon_mass->Write();
     hDimuon_pzVDimuon_mass->Write();
+    hCosDeltaPhi->Write();
 
     fout->cd("Jet_Plots");
     hnJet->Write();
@@ -414,6 +423,8 @@ void RWithoutCuts(){
     hnJets_vs_nMuons->Write();
     hnJets_vs_Mass->Write();
     hnJets_vs_LeadingJetPt->Write();
+    hCosDeltaPhiJets->Write();
+    hCosDeltaPhiJets_vs_Muons->Write();
     
     fout->cd("Recoil_Plots");
     hSumLeadingJetsPt_vs_DimuonPt->Write();
