@@ -43,7 +43,7 @@ void RWithCuts(){
 
     Float_t Muon_leadingPt = -1.;
 
-    TFile *fout = new TFile("Alabalapartakala.root", "RECREATE");
+    TFile *fout = new TFile("Rhgr_with_cuts.root", "RECREATE");
 
     t1->SetBranchStatus("*", 0);
     
