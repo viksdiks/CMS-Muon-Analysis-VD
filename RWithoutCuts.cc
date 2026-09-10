@@ -15,7 +15,8 @@ void RWithoutCuts(){
     TH1::AddDirectory(kFALSE);
 
     TChain *t1 = new TChain("Events");
-    t1->Add("total_data.root");
+    //t1->Add("total_data.root");
+    t1->Add("root://eospublic.cern.ch//eos/opendata/cms/Run2016G/SingleMuon/NANOAOD/UL2016_MiniAODv2_NanoAODv9-v1/130000/0A4230E2-0C75-604D-890F-A4CE5E5C164E.root");
 
     UInt_t nMuon;
     Int_t Muon_charge[1000];
@@ -43,7 +44,7 @@ void RWithoutCuts(){
 
     Float_t Muon_leadingPt = -1.;
 
-    TFile *fout = new TFile("Rhgr_wo_cuts.root", "RECREATE");
+    TFile *fout = new TFile("ExperimentalJets1.root", "RECREATE");
 
     t1->SetBranchStatus("*", 0);
     
@@ -132,6 +133,8 @@ void RWithoutCuts(){
     TH1F *hDeltaPhi_DiJet_Dimuon = new TH1F("hDeltaPhi_DiJet_Dimuon", "hDeltaPhi_DiJet_Dimuon", 50, -3.2, 3.2);
     TH2F *hCosDeltaPhiJets_vs_Muons = new TH2F("hCosDeltaPhiJets_vs_Muons", "cos(#Delta#phi_{jj}) vs cos(#Delta#phi_{#mu#mu});cos(#Delta#phi_{#mu#mu});cos(#Delta#phi_{jj})", 50, -1.1, 1.1, 50, -1.1, 1.1);
 
+    TH2F *hMjj_vs_Mmumu = new TH2F("hMjj_vs_Mmumu", "Dijet Mass vs Dimuon Mass; M_{#mu#mu} [GeV]; M_{jj} [GeV]", 100, 0, 150, 100, 0, 300);
+    
     TH2F *hnMuonVMuon_leadingPt = new TH2F("hnMuonVMuon_leadingPt", "hnMuonVMuon_leadingPt", 10, -0.5, 9.5, 100, 0., 150.);
     TH2F *hMuon_phiVMuon_eta = new TH2F("hMuon_phiVMuon_eta", "hMuon_phiVMuon_eta", 50, -5., 5., 50, -5., 5.);
     TH2F *hMuon_ptVMuon_etaPlus = new TH2F("hMuon_ptVMuon_etaPlus", "hMuon_ptVMuon_etaPlus", 100, 0., 100., 50, -5., 5.);
@@ -155,7 +158,7 @@ void RWithoutCuts(){
     TH2F *hnJets_vs_nTau = new TH2F("hnJets_vs_nTau", "nJets vs nTau; nTau; nJet", 10, -0.5, 9.5, 20, -0.5, 19.5);
 
     Int_t nentries = (Int_t)t1->GetEntries();
-    Int_t maxEvents = 1000000; 
+    Int_t maxEvents = 100000; 
     Int_t eventsToProcess = std::min(nentries, maxEvents);
     
     std::cout << "Events to process: " << eventsToProcess << std::endl;
@@ -186,19 +189,27 @@ void RWithoutCuts(){
             hJet_mass->Fill(Jet_mass[j]);
         }
 
+        bool hasDiJet = false;
+        double cosDeltaPhiJets = -999.0;
+        double m_jj = -1.0;
+
         if (nJet >= 2) {
             TLorentzVector j1, j2, dijet;
             j1.SetPtEtaPhiM(Jet_pt[0], Jet_eta[0], Jet_phi[0], Jet_mass[0]);
             j2.SetPtEtaPhiM(Jet_pt[1], Jet_eta[1], Jet_phi[1], Jet_mass[1]);
             dijet = j1 + j2;
-            hDijet_mass->Fill(dijet.M());
+            
+            m_jj = dijet.M();
+            hDijet_mass->Fill(m_jj);
+            
             double deltaPhiJets = TVector2::Phi_mpi_pi(Jet_phi[0] - Jet_phi[1]);
-            double cosDeltaPhiJets = cos(deltaPhiJets);
+            cosDeltaPhiJets = cos(deltaPhiJets);
             hCosDeltaPhiJets->Fill(cosDeltaPhiJets);
-            hCosDeltaPhiJets_vs_Muons->Fill(cosDeltaPhi, cosDeltaPhiJets);
+            hasDiJet = true;
         }
 
         hnMuon->Fill(nMuon);
+        
         hMET_pt->Fill(MET_pt);
         hMET_phi->Fill(MET_phi);
         hMET_sumEt->Fill(MET_sumEt);
@@ -212,7 +223,7 @@ void RWithoutCuts(){
         hMET_significanceVMET_phi->Fill(MET_significance, MET_phi);
 
         for(UInt_t mu = 0; mu < nMuon; mu++) {
-            hMuon_charge->Fill(Muon_charge[mu]);
+            hMuon_charge->Fill(Muon_charge[mu]); 
             hMuon_tightCharge->Fill(Muon_tightCharge[mu]);
             hMuon_pt->Fill(Muon_pt[mu]);
             hMuon_ptErr->Fill(Muon_ptErr[mu]);
@@ -276,6 +287,11 @@ void RWithoutCuts(){
             Muon_pt[1], Muon_phi[1], Muon_mass[1]
         );
 
+        if (hasDiJet) {
+            hCosDeltaPhiJets_vs_Muons->Fill(cosDeltaPhi, cosDeltaPhiJets);
+            hMjj_vs_Mmumu->Fill(invMass, m_jj);
+        }
+
         hZDimuon_MassRuka->Fill(invMass);
         htransMassZ->Fill(transMassZ);
         hLeadingMuPt_vs_Mass->Fill(invMass, Muon_leadingPt);
@@ -306,7 +322,7 @@ void RWithoutCuts(){
         hDimuon_pzVDimuon_mass->Fill(dimuon.Pz(), mass_ll);
 
         if (Muon_charge[0] * Muon_charge[1] < 0) {
-            hnJets_vs_Mass->Fill(invMass, nJet);//Инвариантна маса на Z-boson
+            hnJets_vs_Mass->Fill(invMass, nJet);
 
             if (nJet > 0) {
                 float leadingJetPt = -1.0;
@@ -425,6 +441,7 @@ void RWithoutCuts(){
     hnJets_vs_LeadingJetPt->Write();
     hCosDeltaPhiJets->Write();
     hCosDeltaPhiJets_vs_Muons->Write();
+    hMjj_vs_Mmumu->Write();
     
     fout->cd("Recoil_Plots");
     hSumLeadingJetsPt_vs_DimuonPt->Write();

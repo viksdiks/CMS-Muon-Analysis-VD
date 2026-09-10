@@ -15,7 +15,7 @@ void WithCuts(){
     TH1::AddDirectory(kFALSE);
 
     TChain *t1 = new TChain("Events");
-    t1->Add("root://eospublic.cern.ch//eos/opendata/cms/derived-data/NanoAODRun1/01-Jul-22/MonteCarlo11_Summer11LegDR_DYJetsToLL_M-50_7TeV-madgraph-pythia6-tauola_merged.root");
+    t1->Add("root://eospublic.cern.ch//eos/opendata/cms/mc/RunIISummer20UL16NanoAODv9/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/106X_mcRun2_asymptotic_v17-v1/40000/F9F34B8E-DAA6-7A4E-B4A5-43F2D741CFE3.root");
 
     UInt_t nMuon;
     Int_t Muon_charge[1000];
@@ -39,8 +39,10 @@ void WithCuts(){
     UInt_t nGenJet;
 
     Float_t GenJet_pt[1000], GenJet_eta[1000], GenJet_phi[1000], GenJet_mass[1000];
+    UChar_t GenJet_hadronFlavour[1000]; 
+    Int_t GenJet_partonFlavour[1000];   
 
-    UInt_t nGenPart;
+    Int_t nGenPart;
     Float_t GenPart_pt[5000];
     Float_t GenPart_phi[5000];
     Int_t GenPart_pdgId[5000];
@@ -55,7 +57,7 @@ void WithCuts(){
 
     Float_t Muon_leadingPt = -1.;
 
-    TFile *fout = new TFile("hgr_with_cutsJET.root", "RECREATE");
+    TFile *fout = new TFile("MonteCarloJetsCuts.root", "RECREATE");
 
     t1->SetBranchStatus("*", 0);
     
@@ -82,6 +84,8 @@ void WithCuts(){
     t1->SetBranchStatus("GenJet_eta", 1); t1->SetBranchAddress("GenJet_eta", GenJet_eta);
     t1->SetBranchStatus("GenJet_phi", 1); t1->SetBranchAddress("GenJet_phi", GenJet_phi);
     t1->SetBranchStatus("GenJet_mass", 1); t1->SetBranchAddress("GenJet_mass", GenJet_mass);
+    t1->SetBranchStatus("GenJet_hadronFlavour", 1); t1->SetBranchAddress("GenJet_hadronFlavour", GenJet_hadronFlavour); 
+    t1->SetBranchStatus("GenJet_partonFlavour", 1); t1->SetBranchAddress("GenJet_partonFlavour", GenJet_partonFlavour); 
 
     t1->SetBranchStatus("nGenPart", 1); t1->SetBranchAddress("nGenPart", &nGenPart);
     t1->SetBranchStatus("GenPart_pt", 1); t1->SetBranchAddress("GenPart_pt", GenPart_pt);
@@ -156,8 +160,21 @@ void WithCuts(){
     TH1F *hGenJet_phi = new TH1F("hGenJet_phi", "GenJet #phi;#phi [rad];Events", 50, -3.2, 3.2);
     TH1F *hGenJet_mass = new TH1F("hGenJet_mass", "GenJet Mass;Mass [GeV];Events", 50, 0., 100.);
     
+   
+    TH1F *hGenJet_hadronFlavour = new TH1F("hGenJet_hadronFlavour", "GenJet Hadron Flavour;Flavour;Events", 10, -0.5, 9.5);
+    TH1F *hGenJet_hadron_b_pt = new TH1F("hGenJet_hadron_b_pt", "GenJet Hadron b-quark p_{T};p_{T} [GeV];Events", 100, 0., 300.);
+    TH1F *hGenJet_hadron_c_pt = new TH1F("hGenJet_hadron_c_pt", "GenJet Hadron c-quark p_{T};p_{T} [GeV];Events", 100, 0., 300.);
+    TH1F *hGenJet_hadron_light_pt = new TH1F("hGenJet_hadron_light_pt", "GenJet Hadron light/gluon p_{T};p_{T} [GeV];Events", 100, 0., 300.);
+
+    
+    TH1F *hGenJet_partonFlavour = new TH1F("hGenJet_partonFlavour", "GenJet Parton Flavour (PDG ID);PDG ID;Events", 61, -30.5, 30.5);
+    TH1F *hGenJet_parton_b_pt = new TH1F("hGenJet_parton_b_pt", "GenJet Parton b-quark p_{T};p_{T} [GeV];Events", 100, 0., 300.);
+    TH1F *hGenJet_parton_c_pt = new TH1F("hGenJet_parton_c_pt", "GenJet Parton c-quark p_{T};p_{T} [GeV];Events", 100, 0., 300.);
+    TH1F *hGenJet_parton_light_pt = new TH1F("hGenJet_parton_light_pt", "GenJet Parton light (u,d,s) p_{T};p_{T} [GeV];Events", 100, 0., 300.);
+    TH1F *hGenJet_parton_g_pt = new TH1F("hGenJet_parton_g_pt", "GenJet Parton gluon p_{T};p_{T} [GeV];Events", 100, 0., 300.);
+
     TH1F *hDijet_mass = new TH1F("hDijet_mass", "Dijet Invariant Mass; M_{jj} [GeV]; Events", 100, 0, 300);
-    TH1F *hCosDeltaPhi = new TH1F("hCosDeltaPhi", "cos(#Delta#phi);cos(#Delta#phi);Events", 50, -1.1, 1.1);
+    TH2F *hMjj_vs_Mmumu = new TH2F("hMjj_vs_Mmumu", "M_{jj} vs M_{#mu#mu}; M_{#mu#mu} [GeV]; M_{jj} [GeV]", 100, 0, 150, 100, 0, 300);
     TH2F *hnGenJet_vs_nJet = new TH2F("hnGenJet_vs_nJet", "nGenJet vs nJet; nJet; nGenJet", 20, -0.5, 19.5, 20, -0.5, 19.5);
 
     TH2F *hnGenJet_vs_GenZPt = new TH2F("hnGenJet_vs_GenZPt", "hnGenJet_vs_GenZPt", 100, 0, 300, 20, -0.5, 19.5);
@@ -207,14 +224,14 @@ void WithCuts(){
     long passMassWindow = 0;
 
     Int_t nentries = (Int_t)t1->GetEntries();
-    Int_t maxEvents = 1000000; 
+    Int_t maxEvents = 100000; 
     Int_t eventsToProcess = std::min(nentries, maxEvents);
     
     std::cout << "Events to process: " << eventsToProcess << std::endl;
 
     for (int i = 0; i < eventsToProcess; i++) {
         t1->GetEntry(i);
-      
+       
         if (i % 100000 == 0) { 
             float progress = (float)i / eventsToProcess * 100; 
             std::cout << "Progress: " << progress << "% (" << i << " events)\r" << std::flush;
@@ -229,26 +246,28 @@ void WithCuts(){
 
         totalEvents++;
 
-   
-        if (nMuon < 2) {
-            continue;
-        }
+       
+        if (nMuon < 2) continue;
         passTwoMuons++;
 
         
         if (Muon_pt[0] <= 30.0 || std::abs(Muon_eta[0]) >= 2.4) continue;
         if (Muon_pt[1] <= 30.0 || std::abs(Muon_eta[1]) >= 2.4) continue;
+
+        if (Muon_pfRelIso04_all[0] >= 0.1 || Muon_pfRelIso04_all[1] >= 0.1) continue;
+        
+        if (std::abs(Muon_dxy[0]) >= 0.2 || std::abs(Muon_dxy[1]) >= 0.2) continue;
+
         passKinematics++;
 
-      
+        
         if (Muon_charge[0] * Muon_charge[1] >= 0) continue;
         passOppositeCharge++;
 
-    
+        
         double deltaPhi = TVector2::Phi_mpi_pi(Muon_phi[0] - Muon_phi[1]);
         double cosDeltaPhi = cos(deltaPhi);
-        hMuon_deltaPhi->Fill(deltaPhi);
-        if (cosDeltaPhi > -0.2 && cosDeltaPhi < 0.8) continue;
+        if (cosDeltaPhi < -1.0 || cosDeltaPhi > -0.8) continue;
         passTopology++;
 
        
@@ -259,7 +278,9 @@ void WithCuts(){
         if (invMass <= 60.0 || invMass >= 120.0) continue;
         passMassWindow++;
 
-        Μθον
+        
+        hMuon_deltaPhi->Fill(deltaPhi);
+
         hnJets_vs_nMuons->Fill(nMuon, nJet);
         hnJets_vs_nTau->Fill(nTau, nJet);
         
@@ -278,6 +299,31 @@ void WithCuts(){
             hGenJet_phi->Fill(GenJet_phi[gj]);
             hGenJet_mass->Fill(GenJet_mass[gj]);
             hGenJet_ptVsMass->Fill(GenJet_mass[gj], GenJet_pt[gj]);
+            
+            
+            int hFlav = (int)GenJet_hadronFlavour[gj];
+            hGenJet_hadronFlavour->Fill(std::abs(hFlav));
+            if (std::abs(hFlav) == 5) {
+                hGenJet_hadron_b_pt->Fill(GenJet_pt[gj]);
+            } else if (std::abs(hFlav) == 4) {
+                hGenJet_hadron_c_pt->Fill(GenJet_pt[gj]);
+            } else if (std::abs(hFlav) == 0) {
+                hGenJet_hadron_light_pt->Fill(GenJet_pt[gj]);
+            }
+
+            
+            int pFlav = (int)GenJet_partonFlavour[gj];
+            hGenJet_partonFlavour->Fill(pFlav); 
+            int absPFlav = std::abs(pFlav);
+            if (absPFlav == 5) {
+                hGenJet_parton_b_pt->Fill(GenJet_pt[gj]);
+            } else if (absPFlav == 4) {
+                hGenJet_parton_c_pt->Fill(GenJet_pt[gj]);
+            } else if (absPFlav >= 1 && absPFlav <= 3) {
+                hGenJet_parton_light_pt->Fill(GenJet_pt[gj]);
+            } else if (absPFlav == 21) {
+                hGenJet_parton_g_pt->Fill(GenJet_pt[gj]);
+            }
         }
 
         if (nJet >= 2) {
@@ -286,6 +332,7 @@ void WithCuts(){
             j2.SetPtEtaPhiM(Jet_pt[1], Jet_eta[1], Jet_phi[1], Jet_mass[1]);
             dijet = j1 + j2;
             hDijet_mass->Fill(dijet.M());
+            hMjj_vs_Mmumu->Fill(invMass, dijet.M());
             double deltaPhiJets = TVector2::Phi_mpi_pi(Jet_phi[0] - Jet_phi[1]);
             double cosDeltaPhiJets = cos(deltaPhiJets);
             hCosDeltaPhiJets->Fill(cosDeltaPhiJets);
@@ -387,8 +434,6 @@ void WithCuts(){
             }
         }
 
-    
-
         Muon_leadingPt = Muon_pt[0];
         for (UInt_t mu = 1; mu < nMuon; mu++) {
             if (Muon_pt[mu] > Muon_leadingPt) {
@@ -422,7 +467,6 @@ void WithCuts(){
         }
 
         double deltaEta = Muon_eta[0] - Muon_eta[1];
-        hMuon_deltaPhi->Fill(deltaPhi);
         hDeltaEta->Fill(deltaEta);
 
         double transMassZ = AnalysisPhysics::CalculateTransMassZ_Hand(
@@ -475,7 +519,7 @@ void WithCuts(){
     } 
     
 std::cout << "\n======================================================================\n";
-std::cout << "                           CUT-FLOW SUMMARY                           \n";
+std::cout << "                            CUT-FLOW SUMMARY                            \n";
 std::cout << "======================================================================\n";
 std::cout << "0. Total Generated Events : " << totalEvents << " (100.0%)\n";
 std::cout << "----------------------------------------------------------------------\n";
@@ -498,7 +542,9 @@ std::cout << "2. Pass Muon Kinematics   : " << passKinematics
 std::cout << "   -> REQUIRE for BOTH muons:\n";
 std::cout << "      - Muon_pt > 30.0 GeV\n";
 std::cout << "      - |Muon_eta| < 2.4\n";
-std::cout << "   -> REJECT: muons failing pt or eta requirements\n";
+std::cout << "      - pfRelIso04_all < 0.1\n";
+std::cout << "      - |dxy| < 0.2\n";
+std::cout << "   -> REJECT: muons failing kinematics, isolation or dxy requirements\n";
           
 rejected = passKinematics - passOppositeCharge;
 std::cout << "3. Pass Opposite Charge   : " << passOppositeCharge 
@@ -513,8 +559,8 @@ std::cout << "4. Pass Topology (dPhi)   : " << passTopology
           << " | Accepted: " << (float)passTopology / passOppositeCharge * 100 << "%"
           << " | Rejected: " << (float)rejected / passOppositeCharge * 100 << "%"
           << " | Remaining: " << (float)passTopology / totalEvents * 100 << "%\n";
-std::cout << "   -> REQUIRE: cos(deltaPhi) <= -0.2 OR cos(deltaPhi) >= 0.8\n";
-std::cout << "   -> REJECT: -0.2 < cos(deltaPhi) < 0.8 (back-to-back muons)\n";
+std::cout << "   -> REQUIRE: -1.0 <= cos(deltaPhi) <= -0.8\n";
+std::cout << "   -> REJECT: cos(deltaPhi) outside [-1.0, -0.8]\n";
 std::cout << "   -> NOTE: deltaPhi corrected to [-pi, pi] range\n";
           
 rejected = passTopology - passMassWindow;
@@ -609,6 +655,7 @@ std::cout << "==================================================================
     hJet_phi->Write();
     hJet_mass->Write();
     hDijet_mass->Write();
+    hMjj_vs_Mmumu->Write();
     hnJets_vs_nMuons->Write();
     hnJets_vs_Mass->Write();
     hnJets_vs_LeadingJetPt->Write();
@@ -623,6 +670,18 @@ std::cout << "==================================================================
     hGenJet_mass->Write();
     hnGenJet_vs_nJet->Write();
     hGenJet_ptVsMass->Write();
+
+    
+    hGenJet_hadronFlavour->Write();
+    hGenJet_hadron_b_pt->Write();
+    hGenJet_hadron_c_pt->Write();
+    hGenJet_hadron_light_pt->Write();
+
+    hGenJet_partonFlavour->Write();
+    hGenJet_parton_b_pt->Write();
+    hGenJet_parton_c_pt->Write();
+    hGenJet_parton_light_pt->Write();
+    hGenJet_parton_g_pt->Write();
     
     hnGenJet_vs_GenZPt->Write();
     hnGenJet25_vs_GenZPt->Write();
