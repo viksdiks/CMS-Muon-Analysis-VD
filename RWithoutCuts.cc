@@ -44,7 +44,7 @@ void RWithoutCuts(){
 
     Float_t Muon_leadingPt = -1.;
 
-    TFile *fout = new TFile("ExperimentalJetsCuts.root", "RECREATE");
+    TFile *fout = new TFile("ExperimentalJets.root", "RECREATE");
 
     t1->SetBranchStatus("*", 0);
     
