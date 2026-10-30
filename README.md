@@ -29,7 +29,7 @@ By comparing Monte Carlo (MC) simulated data with real experimental data from th
 ## Prerequisites
 To run this analysis, you need to have the **CERN ROOT** data analysis framework installed on your system.
 * **ROOT 6:** [Installation Guide](https://root.cern/install/)
-* A C++ compiler (e.g., GCC or Clang)
+* A C++ compiler
 
 ## Data Preparation
 This analysis requires specific `.root` files from the [CERN Open Data Portal](https://opendata.cern.ch/docs/cms). 
