@@ -4,7 +4,7 @@
 ![ROOT](https://img.shields.io/badge/Framework-CERN%20ROOT-blue.svg)
 
 ## Overview
-This repository contains a C++ based analysis of **CMS Open Data** using the **CERN ROOT** framework. The primary goal of this project is to study the weak interaction and related fields by exploring:
+This repository contains a C++ based analysis of CMS Open Data using the CERN ROOT framework. The primary goal of this project is to isolate Z bosons from the data and analyze their associated hadronic activity (jets). Specifically, the study explores:
 - **Z boson recoil**
 - **Jet kinematics**
 
